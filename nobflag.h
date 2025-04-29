@@ -69,12 +69,14 @@ int main(int argc, char **argv) {
 #include "nob.h"
 #include <stdbool.h>
 
-#define nob_da_swap(da, i, j)                    \
-    do {                                         \
-        nob_da_append(da, da->items[i]);         \
-        da->items[i] = da->items[j];             \
-        da->items[j] = da->items[da->count - 1]; \
-        da->count--;                             \
+#define nob_da_swap(da, i, j)                           \
+    do {                                                \
+        size_t ii = (i);                                \
+        size_t jj = (j);                                \
+        nob_da_append((da), (da)->items[ii]);           \
+        (da)->items[ii] = (da)->items[jj];              \
+        (da)->items[jj] = (da)->items[(da)->count - 1]; \
+        (da)->count--;                                  \
     } while (0)
 
 typedef struct {
@@ -108,13 +110,13 @@ size_t nob_cmd_flags_parse(Nob_Cmd_Flags *flags, int *argc, char ***argv);
 #include <string.h>
 size_t nob_cmd_flags_parse(Nob_Cmd_Flags *flags, int *argc, char ***argv) {
     NOB_ASSERT(flags != NULL && argc != NULL && argv != NULL);
-    if (*argc <= 1) {
+    if (*argc <= 0) {
         return 0;
     }
 
-    size_t i = 1;
-    for (; i < *argc; ++i) {
-        char *arg = (*argv)[i];
+    size_t arg_idx = 1;
+    for (; arg_idx < *argc; ++arg_idx) {
+        char *arg = (*argv)[arg_idx];
         if (!arg[0]) {
             break;
         }
@@ -127,20 +129,20 @@ size_t nob_cmd_flags_parse(Nob_Cmd_Flags *flags, int *argc, char ***argv) {
             break;
         }
         arg++;
-        for (size_t j = 0; j < flags->count; ++j) {
-            Nob_Cmd_Flag flag = flags->items[j];
+        for (size_t flag_idx = 0; flag_idx < flags->count; ++flag_idx) {
+            Nob_Cmd_Flag flag = flags->items[flag_idx];
             if (strcmp(flag.name, arg) == 0) {
                 *(flag.value) = true;
-                nob_da_swap(flags, j, flags->count - 1);
-                flags->count--;
+                nob_da_swap(flags, flag_idx, flags->count - 1);
+                (flags->count)--;
                 break;
             }
         }
     }
 
-    (*argc) -= i;
-    (*argv) += i;
-    return i - 1;
+    (*argc) -= arg_idx;
+    (*argv) += arg_idx;
+    return arg_idx - 1;
 }
 #endif // NOB_IMPLEMENTATION
 
